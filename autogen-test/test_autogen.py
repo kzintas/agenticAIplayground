@@ -157,7 +157,7 @@ async def langchain_test() -> None:
 async def assistant_run() -> None:
     agent = AssistantAgent(
         name="assistant",
-        model_client=model_client,
+        model_client=model_client_gemini,
         tools=[web_search],
         system_message="Use tools to solve tasks.",
     )
@@ -174,7 +174,7 @@ async def assistant_run() -> None:
 
 
 async def image_test() -> None:
-    agent_vision = AssistantAgent(name="assistant", model_client=model_client_vision)
+    agent_vision = AssistantAgent(name="assistant", model_client=model_client_gemini)
 
     pil_image = PIL.Image.open(
         BytesIO(requests.get("https://picsum.photos/300/200").content)
@@ -239,8 +239,8 @@ async def multimedia_test() -> None:
 
 async def multi_agent() -> None:
     # Multi agent example
-    assistant = AssistantAgent("assistant", model_client)
-    web_surfer = MultimodalWebSurfer("web_surfer", model_client)
+    assistant = AssistantAgent("assistant", model_client_gemini)
+    web_surfer = MultimodalWebSurfer("web_surfer", model_client_gemini)
     user_proxy = UserProxyAgent("user_proxy")
     termination = TextMentionTermination("exit")  # Type 'exit' to end the conversation.
     team = RoundRobinGroupChat(
@@ -248,7 +248,7 @@ async def multi_agent() -> None:
     )
     await Console(
         team.run_stream(
-            task="Find information about AutoGen and write a short summary."
+            task="Find information about 'Kimi No Nawa' and write a short summary."
         )
     )
 
@@ -273,10 +273,11 @@ async def main() -> None:
 # asyncio.run(main())
 # asyncio.run(assistant_run())
 # asyncio.run(image_test())
+asyncio.run(multi_agent())
 # asyncio.run(assistant_run_stream())
 # asyncio.run(langchain_test())
 # asyncio.run(formatted_assistant())
 # asyncio.run(streaming_run())
-asyncio.run(test_gemini())
+# asyncio.run(test_gemini())
 # await assistant_run()
 # Use asyncio.run(...) when running in a script.

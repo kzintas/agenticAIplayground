@@ -12,7 +12,7 @@ from autogen_agentchat.conditions import TextMentionTermination
 async def setup_code_generation_and_execution():
     # 1. Set up the model client
     model_client = OpenAIChatCompletionClient(
-        model="llama3.3:70b-instruct-q4_K_S",  # Replace with your model
+        model="qwq:latest",  # Replace with your model
         base_url="http://127.0.0.1:11434/v1",  # Replace with your endpoint
         api_key="NULL",
         model_info={

@@ -7,6 +7,7 @@ from autogen_agentchat.teams import RoundRobinGroupChat
 from autogen_agentchat.ui import Console
 from autogen_core import CancellationToken
 from autogen_ext.models.openai import OpenAIChatCompletionClient
+import os
 
 # Create an OpenAI model client.
 model_client = OpenAIChatCompletionClient(
@@ -22,17 +23,22 @@ model_client = OpenAIChatCompletionClient(
     },
 )
 
+model_client_gemini = OpenAIChatCompletionClient(
+    model="gemini-2.0-flash",
+    api_key=os.environ.get("GEMINI_API_KEY"),
+)
+
 # Create the primary agent.
 primary_agent = AssistantAgent(
     "primary",
-    model_client=model_client,
+    model_client=model_client_gemini,
     system_message="You are a helpful AI assistant.",
 )
 
 # Create the critic agent.
 critic_agent = AssistantAgent(
     "critic",
-    model_client=model_client,
+    model_client=model_client_gemini,
     system_message="Provide constructive feedback. Respond with 'APPROVE' to when your feedbacks are addressed.",
 )
 
@@ -55,9 +61,13 @@ async def stream_result() -> None:
     # await team.reset()  # Reset the team for a new task.
     async for message in team.run_stream(task="Write a short poem about the fall season."):  # type: ignore
         if isinstance(message, TaskResult):
-            print("Stop Reason:", message.stop_reason)
+            print("\n=== Task Completed ===")
+            print(f"Stop Reason: {message.stop_reason}")
+            print("==================\n")
         else:
-            print(message)
+            print(f"\n[{message.source}]:")
+            print(f"{message.content}")
+            print("-" * 50)
 
 
 asyncio.run(stream_result())
