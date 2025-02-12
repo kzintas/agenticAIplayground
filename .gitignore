@@ -6,6 +6,11 @@ tmp/
 *.txt
 *.pdf
 *.png
+*.md
+*.json
+*.xml
+.webui_secret_key
+=2.0.0
 #ignore other files folder
 .DS_Store
 *.pyc
