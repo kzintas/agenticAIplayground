@@ -1,0 +1,11 @@
+# Ignore all directories
+Logs/
+tmp/
+.DS_Store
+*.attrib
+*.txt
+*.pdf
+*.png
+#ignore other files folder
+.DS_Store
+*.pyc
