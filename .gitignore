@@ -11,6 +11,7 @@ tmp/
 *.xml
 .webui_secret_key
 =2.0.0
+*/coding/*
 #ignore other files folder
 .DS_Store
 *.pyc

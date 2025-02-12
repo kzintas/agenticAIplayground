@@ -23,6 +23,7 @@ import pandas as pd
 from typing import Literal
 
 from pydantic import BaseModel
+import os
 
 
 # The response format for the agent as a Pydantic base model.
@@ -80,6 +81,12 @@ model_client_formated_response = OpenAIChatCompletionClient(
         "family": "unknown",
     },
     response_format=AgentResponse,  # type: ignore
+)
+
+
+model_client_gemini = OpenAIChatCompletionClient(
+    model="gemini-2.0-flash",
+    api_key=os.environ.get("GEMINI_API_KEY"),
 )
 
 
@@ -201,56 +208,75 @@ async def assistant_run_stream() -> None:
     )
 
 
+async def create_assistant() -> None:
+    agent = AssistantAgent("assistant", model_client)
+    print(await agent.run(task="Say 'Hello World!'"))
+
+
+async def tool_use() -> None:
+    # tool use example
+    agent = AssistantAgent(
+        name="weather_agent",
+        model_client=model_client,
+        tools=[get_weather],
+        system_message="You are a helpful assistant.",
+        reflect_on_tool_use=True,
+    )
+    await Console(agent.run_stream(task="What is the weather in New York?"))
+
+
+async def multimedia_test() -> None:
+    # Multimodal message example
+    pil_image = Image.open(
+        BytesIO(requests.get("https://picsum.photos/300/200").content)
+    )
+    img = AGImage(pil_image)
+    multi_modal_message = MultiModalMessage(
+        content=["Can you describe the content of this image?", img], source="User"
+    )
+    print(img)
+
+
+async def multi_agent() -> None:
+    # Multi agent example
+    assistant = AssistantAgent("assistant", model_client)
+    web_surfer = MultimodalWebSurfer("web_surfer", model_client)
+    user_proxy = UserProxyAgent("user_proxy")
+    termination = TextMentionTermination("exit")  # Type 'exit' to end the conversation.
+    team = RoundRobinGroupChat(
+        [web_surfer, assistant, user_proxy], termination_condition=termination
+    )
+    await Console(
+        team.run_stream(
+            task="Find information about AutoGen and write a short summary."
+        )
+    )
+
+
+async def test_gemini() -> None:
+    response = await model_client_gemini.create(
+        [UserMessage(content="What is the capital of France?", source="user")]
+    )
+    print(response)
+
+
 async def main() -> None:
     response = model_client.create(
         [UserMessage(content="What is the capital of France?", source="user")]
     )
     print(await response)
-    # agent = AssistantAgent("assistant", model_client)
-    # print(await agent.run(task="Say 'Hello World!'"))
-    # tool use example
-    # agent = AssistantAgent(
-    #     name="weather_agent",
-    #     model_client=model_client,
-    #     tools=[get_weather],
-    #     system_message="You are a helpful assistant.",
-    #     reflect_on_tool_use=True,
-    # )
-    # await Console(agent.run_stream(task="What is the weather in New York?"))
 
     # text_message = TextMessage(content="Hello, world!", source="User")
     # print(text_message)
-
-    # Multimodal message example
-    # pil_image = Image.open(
-    #     BytesIO(requests.get("https://picsum.photos/300/200").content)
-    # )
-    # img = AGImage(pil_image)
-    # multi_modal_message = MultiModalMessage(
-    #     content=["Can you describe the content of this image?", img], source="User"
-    # )
-    # print(img)
-    # Multi agent example
-    # assistant = AssistantAgent("assistant", model_client)
-    # web_surfer = MultimodalWebSurfer("web_surfer", model_client)
-    # user_proxy = UserProxyAgent("user_proxy")
-    # termination = TextMentionTermination("exit")  # Type 'exit' to end the conversation.
-    # team = RoundRobinGroupChat(
-    #     [web_surfer, assistant, user_proxy], termination_condition=termination
-    # )
-    # await Console(
-    #     team.run_stream(
-    #         task="Find information about AutoGen and write a short summary."
-    #     )
-    # )
 
 
 # asyncio.run(main())
 # asyncio.run(assistant_run())
 # asyncio.run(image_test())
 # asyncio.run(assistant_run_stream())
-asyncio.run(langchain_test())
+# asyncio.run(langchain_test())
 # asyncio.run(formatted_assistant())
 # asyncio.run(streaming_run())
+asyncio.run(test_gemini())
 # await assistant_run()
 # Use asyncio.run(...) when running in a script.
