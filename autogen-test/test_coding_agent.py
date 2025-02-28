@@ -7,6 +7,7 @@ from autogen_core import CancellationToken
 from autogen_agentchat.teams import RoundRobinGroupChat
 from autogen_agentchat.ui import Console
 from autogen_agentchat.conditions import TextMentionTermination
+import os
 
 
 async def setup_code_generation_and_execution():
@@ -23,11 +24,22 @@ async def setup_code_generation_and_execution():
         },
     )
 
+    model_client_gemini = OpenAIChatCompletionClient(
+        model="gemini-2.0-flash",
+        api_key=os.environ.get("GEMINI_API_KEY"),
+        model_info={
+            "vision": True,
+            "function_calling": True,
+            "json_output": True,
+            "family": "gemini-2.0-flash",
+        },
+    )
+
     # 2. Create the code generator agent (AssistantAgent)
     code_generator = AssistantAgent(
         name="code_generator",
-        model_client=model_client,
-        system_message="You are a Python programmer. When asked to solve a problem, think step by step and always provide your solution as a Python script within ```python code blocks. Add a blank line at the start of the block",
+        model_client=model_client_gemini,
+        system_message="You are a Python programmer. When asked to solve a problem, think step by step and always provide your solution as a Python script within ```python code blocks.",
     )
 
     # 3. Set up the code executor with Docker
